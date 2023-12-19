@@ -6,18 +6,28 @@ class Restaurant1 {
     private static final int NUM_PRIORITY_CUSTOMERS = 2;
     private static final int NUM_GARSONS = 2;
 
+    private static final int NUM_Asci = 2;
+
     private Semaphore tablesSemaphore;
     private Semaphore priorityCustomersSemaphore;
     private Semaphore orderSemaphore;
+    private Semaphore siparisSemaphore;
     private Garson[] garsons;
+
+    private Asci[] asci;
 
     public Restaurant1() {
         tablesSemaphore = new Semaphore(NUM_TABLES);
         priorityCustomersSemaphore = new Semaphore(NUM_PRIORITY_CUSTOMERS);
         orderSemaphore = new Semaphore(1);
+        siparisSemaphore= new Semaphore(2);
         garsons = new Garson[NUM_GARSONS]; // Create an array to store garsons
         for (int i = 0; i < NUM_GARSONS; i++) {
             garsons[i] = new Garson(i);
+        }
+        asci = new Asci[NUM_Asci]; // Create an array to store garsons
+        for (int i = 0; i < NUM_Asci; i++) {
+            asci[i] = new Asci(i);
         }
     }
 
@@ -32,6 +42,35 @@ class Restaurant1 {
             customerThread.start();
         }
     }
+    class siparis implements Runnable {
+        private int customerId;
+
+        private Restaurant1.Garson garson;
+
+        private Asci asci;
+
+        public siparis(int customerId, Restaurant1.Garson garson, Asci asci) {
+            this.customerId = customerId;
+            this.garson = garson;
+            this.asci = asci;
+        }
+
+        @Override
+        public void run() {
+            try {
+                siparisSemaphore.acquire();
+                System.out.println("yemek siparisini yapan asci " + asci.getAsciId() + " bu kisiye yapıor" + customerId);
+                siparisSemaphore.release();
+
+                Thread.sleep(3000);
+
+                siparisSemaphore.release();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
 
     class Customer implements Runnable {
         private int customerId;

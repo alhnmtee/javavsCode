@@ -1,3 +1,4 @@
+import java.util.Random;
 import java.util.concurrent.Semaphore;
 
 class Restaurant1 {
@@ -32,39 +33,48 @@ class Restaurant1 {
     }
 
     public void start() {
+        Semaphore orderSemaphore = new Semaphore(2);
+        Random random = new Random();
+        boolean hasPriorityCustomers = false; // Flag to check if there are priority customers
         for (int i = 0; i < NUM_CUSTOMERS; i++) {
             Thread customerThread;
-            if (i < NUM_PRIORITY_CUSTOMERS) {
-                customerThread = new Thread(new PriorityCustomer(i, garsons[i % NUM_GARSONS]));
+            Thread siparisThread;
+            int age = random.nextInt(61) + 20;
+            if (age > 65) {
+                customerThread = new Thread(new PriorityCustomer(i, garsons[i % NUM_GARSONS], age, orderSemaphore));
+                siparisThread = new Thread(new siparis(i,garsons[i % NUM_GARSONS]));
+                hasPriorityCustomers = true; // Set the flag if there is a priority customer
             } else {
-                customerThread = new Thread(new Customer(i, garsons[i % NUM_GARSONS]));
+                customerThread = new Thread(new Customer(i, garsons[i % NUM_GARSONS], age, orderSemaphore));
+                siparisThread = new Thread(new siparis(i, garsons[i % NUM_GARSONS]));
             }
             customerThread.start();
+            siparisThread.start();
         }
     }
+
     class siparis implements Runnable {
         private int customerId;
 
-        private Restaurant1.Garson garson;
-
+        private int garsonId;
+        private Garson garson;
         private Asci asci;
 
-        public siparis(int customerId, Restaurant1.Garson garson, Asci asci) {
+        public siparis(int customerId,Garson garson) {
             this.customerId = customerId;
             this.garson = garson;
-            this.asci = asci;
         }
 
         @Override
         public void run() {
             try {
                 siparisSemaphore.acquire();
-                System.out.println("yemek siparisini yapan asci " + asci.getAsciId() + " bu kisiye yapıor" + customerId);
-                siparisSemaphore.release();
+                System.out.println("yemek siparisini yapan asci " + " bu kisiye yapıor" + customerId);
+
 
                 Thread.sleep(3000);
-
                 siparisSemaphore.release();
+                //orderSemaphore.release();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -75,28 +85,42 @@ class Restaurant1 {
     class Customer implements Runnable {
         private int customerId;
         private Garson garson;
+        private int age;
+        public Semaphore orderSemaphore;
+        public boolean orderTaken;
 
-        public Customer(int customerId, Garson garson) {
+        public Customer(int customerId, Garson garson, int age, Semaphore orderSemaphore) {
             this.customerId = customerId;
             this.garson = garson;
+            this.age = age;
+            this.orderSemaphore = orderSemaphore;
+            this.orderTaken =false;
         }
 
         @Override
         public void run() {
             try {
                 tablesSemaphore.acquire();
-                System.out.println("Customer " + customerId + " is waiting for a table.");
+                System.out.println("Customer " + customerId + " (Age: " + age + ") is waiting for a table.");
+                Thread.sleep(500);
                 tablesSemaphore.acquire();
-                System.out.println("Customer " + customerId + " is sitting at a table.");
+                System.out.println("Customer " + customerId + " (Age: " + age + ") is sitting at a table.");
 
-                orderSemaphore.acquire();
-                System.out.println("Garson " + garson.getGarsonId() + " is taking an order from Customer " + customerId);
-                orderSemaphore.release();
+                if (!orderTaken) {
+                    orderSemaphore.acquire();
+                    System.out.println("Garson " + garson.getGarsonId() + " is taking an order from Customer " + customerId + " (Age: " + age + ")");
+                    Thread.sleep(2000);
+
+                    System.out.println("Garson " + garson.getGarsonId() + " sipariş aldı from Customer " + customerId + " (Age: " + age + ")");
+                    orderSemaphore.release();
+                    orderTaken = true;
+
+                }
 
                 Thread.sleep(2000);
 
                 tablesSemaphore.release();
-                System.out.println("Customer " + customerId + " left the table.");
+                System.out.println("Customer " + customerId + " (Age: " + age + ") left the table.");
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -104,24 +128,32 @@ class Restaurant1 {
     }
 
     class PriorityCustomer extends Customer {
-        public PriorityCustomer(int customerId, Garson garson) {
-            super(customerId, garson);
+        public PriorityCustomer(int customerId, Garson garson, int age, Semaphore orderSemaphore) {
+            super(customerId, garson, age, orderSemaphore);
         }
 
         @Override
         public void run() {
             try {
-                priorityCustomersSemaphore.acquire();
-                System.out.println("Customer " + super.customerId + " (Priority) is sitting at a table.");
+                if (priorityCustomersSemaphore.tryAcquire()) {
+                    System.out.println("Customer " + super.customerId + " (Age: " + super.age + ") (Priority) is sitting at a table.");
 
-                orderSemaphore.acquire();
-                System.out.println("Garson " + super.garson.getGarsonId() + " is taking an order from Customer " + super.customerId + " (Priority)");
-                orderSemaphore.release();
+                    if (!orderTaken) {
+                        orderSemaphore.acquire();
+                        System.out.println("Garson " + super.garson.getGarsonId() + " is taking an order from Customer " + super.customerId + " (Age: " + super.age + ") (Priority)");
+                        Thread.sleep(2000);
 
-                Thread.sleep(2000);
+                        System.out.println("Garson " + super.garson.getGarsonId() + " sipariş aldı from Customer " + super.customerId + " (Age: " + super.age + ") (Priority)");
+                        orderSemaphore.release();
+                        orderTaken = true;
+                    }
 
-                priorityCustomersSemaphore.release();
-                System.out.println("Customer " + super.customerId + " (Priority) left the table.");
+                    Thread.sleep(2000);
+
+                    priorityCustomersSemaphore.release();
+                    System.out.println("Customer " + super.customerId + " (Age: " + super.age + ") (Priority) left the table.");
+                }
+
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

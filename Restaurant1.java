@@ -6,6 +6,7 @@ class Restaurant1 {
     private static final int NUM_CUSTOMERS = 6;
     private static final int NUM_PRIORITY_CUSTOMERS = 2;
     private static final int NUM_GARSONS = 2;
+    private static final int NUM_Kasa=1;
 
     private static final int NUM_Asci = 2;
 
@@ -13,8 +14,11 @@ class Restaurant1 {
     private Semaphore priorityCustomersSemaphore;
     private Semaphore orderSemaphore;
     private Semaphore siparisSemaphore;
+    private Semaphore odemeSemaphore;
     private Garson[] garsons;
-
+    private tables[] tables;
+    public boolean finish;
+    public boolean[] booleanArray;
     private Asci[] asci;
 
     public Restaurant1() {
@@ -23,6 +27,7 @@ class Restaurant1 {
         orderSemaphore = new Semaphore(1);
         siparisSemaphore= new Semaphore(2);
         garsons = new Garson[NUM_GARSONS]; // Create an array to store garsons
+        booleanArray=new boolean[NUM_TABLES];
         for (int i = 0; i < NUM_GARSONS; i++) {
             garsons[i] = new Garson(i);
         }
@@ -34,25 +39,187 @@ class Restaurant1 {
 
     public void start() {
         Semaphore orderSemaphore = new Semaphore(2);
+        Semaphore odemeSemaphore = new Semaphore(1);
         Random random = new Random();
         boolean hasPriorityCustomers = false; // Flag to check if there are priority customers
-        for (int i = 0; i < NUM_CUSTOMERS; i++) {
-            Thread customerThread;
-            Thread siparisThread;
-            int age = random.nextInt(61) + 20;
-            if (age > 65) {
-                customerThread = new Thread(new PriorityCustomer(i, garsons[i % NUM_GARSONS], age, orderSemaphore));
-                siparisThread = new Thread(new siparis(i,garsons[i % NUM_GARSONS]));
-                hasPriorityCustomers = true; // Set the flag if there is a priority customer
-            } else {
-                customerThread = new Thread(new Customer(i, garsons[i % NUM_GARSONS], age, orderSemaphore));
-                siparisThread = new Thread(new siparis(i, garsons[i % NUM_GARSONS]));
+        finish=false;
+        booleanArray[0]=true;
+        booleanArray[1]=true;
+        booleanArray[2]=true;
+        booleanArray[3]=true;
+        booleanArray[4]=true;
+        booleanArray[5]=true;
+
+            for (int tablesId = 0; tablesId < NUM_TABLES; tablesId++) {
+                for (int i = 0; i < NUM_CUSTOMERS; i++) {
+                if(tablesId==0 && booleanArray[tablesId]==true)
+                {
+                    Thread customerThread;
+                    Thread siparisThread;
+                    Thread odemeThread;
+                    int age = random.nextInt(61) + 20;
+                    if (age > 65) {
+
+                        customerThread = new Thread(new PriorityCustomer(i, garsons[i % NUM_GARSONS], age, orderSemaphore,tablesId,booleanArray));
+                        siparisThread = new Thread(new siparis(i, garsons[i % NUM_GARSONS]));
+                        hasPriorityCustomers = true; // Set the flag if there is a priority customer
+                        odemeThread = new Thread(new odeme(i, NUM_Kasa, odemeSemaphore, finish));
+                    } else {
+                        customerThread = new Thread(new Customer(i, garsons[i % NUM_GARSONS], age, orderSemaphore));
+                        siparisThread = new Thread(new siparis(i, garsons[i % NUM_GARSONS]));
+                        odemeThread = new Thread(new odeme(i, NUM_Kasa, odemeSemaphore, finish));
+                    }
+                    customerThread.start();
+                    siparisThread.start();
+                    odemeThread.start();
+                    booleanArray[tablesId]=false;
+                }
+                    if(tablesId==1 && booleanArray[tablesId]==true)
+                    {
+                        Thread customerThread;
+                        Thread siparisThread;
+                        Thread odemeThread;
+                        int age = random.nextInt(61) + 20;
+                        if (age > 65) {
+
+                            customerThread = new Thread(new PriorityCustomer(i, garsons[i % NUM_GARSONS], age, orderSemaphore,tablesId,booleanArray));
+                            siparisThread = new Thread(new siparis(i, garsons[i % NUM_GARSONS]));
+                            hasPriorityCustomers = true; // Set the flag if there is a priority customer
+                            odemeThread = new Thread(new odeme(i, NUM_Kasa, odemeSemaphore, finish));
+                        } else {
+                            customerThread = new Thread(new Customer(i, garsons[i % NUM_GARSONS], age, orderSemaphore));
+                            siparisThread = new Thread(new siparis(i, garsons[i % NUM_GARSONS]));
+                            odemeThread = new Thread(new odeme(i, NUM_Kasa, odemeSemaphore, finish));
+                        }
+                        customerThread.start();
+                        siparisThread.start();
+                        odemeThread.start();
+                        booleanArray[tablesId]=false;
+                    }
+                    if(tablesId==2 && booleanArray[tablesId]==true)
+                    {
+                        Thread customerThread;
+                        Thread siparisThread;
+                        Thread odemeThread;
+                        int age = random.nextInt(61) + 20;
+                        if (age > 65) {
+
+                            customerThread = new Thread(new PriorityCustomer(i, garsons[i % NUM_GARSONS], age, orderSemaphore,tablesId,booleanArray));
+                            siparisThread = new Thread(new siparis(i, garsons[i % NUM_GARSONS]));
+                            hasPriorityCustomers = true; // Set the flag if there is a priority customer
+                            odemeThread = new Thread(new odeme(i, NUM_Kasa, odemeSemaphore, finish));
+                        } else {
+                            customerThread = new Thread(new Customer(i, garsons[i % NUM_GARSONS], age, orderSemaphore));
+                            siparisThread = new Thread(new siparis(i, garsons[i % NUM_GARSONS]));
+                            odemeThread = new Thread(new odeme(i, NUM_Kasa, odemeSemaphore, finish));
+                        }
+                        customerThread.start();
+                        siparisThread.start();
+                        odemeThread.start();
+                        booleanArray[tablesId]=false;
+                    }
+                    if(tablesId==3 && booleanArray[tablesId]==true)
+                    {
+                        Thread customerThread;
+                        Thread siparisThread;
+                        Thread odemeThread;
+                        int age = random.nextInt(61) + 20;
+                        if (age > 65) {
+
+                            customerThread = new Thread(new PriorityCustomer(i, garsons[i % NUM_GARSONS], age, orderSemaphore,tablesId,booleanArray));
+                            siparisThread = new Thread(new siparis(i, garsons[i % NUM_GARSONS]));
+                            hasPriorityCustomers = true; // Set the flag if there is a priority customer
+                            odemeThread = new Thread(new odeme(i, NUM_Kasa, odemeSemaphore, finish));
+                        } else {
+                            customerThread = new Thread(new Customer(i, garsons[i % NUM_GARSONS], age, orderSemaphore));
+                            siparisThread = new Thread(new siparis(i, garsons[i % NUM_GARSONS]));
+                            odemeThread = new Thread(new odeme(i, NUM_Kasa, odemeSemaphore, finish));
+                        }
+                        customerThread.start();
+                        siparisThread.start();
+                        odemeThread.start();
+                        booleanArray[tablesId]=false;
+                    }
+                    if(tablesId==4 && booleanArray[tablesId]==true)
+                    {
+                        Thread customerThread;
+                        Thread siparisThread;
+                        Thread odemeThread;
+                        int age = random.nextInt(61) + 20;
+                        if (age > 65) {
+
+                            customerThread = new Thread(new PriorityCustomer(i, garsons[i % NUM_GARSONS], age, orderSemaphore,tablesId,booleanArray));
+                            siparisThread = new Thread(new siparis(i, garsons[i % NUM_GARSONS]));
+                            hasPriorityCustomers = true; // Set the flag if there is a priority customer
+                            odemeThread = new Thread(new odeme(i, NUM_Kasa, odemeSemaphore, finish));
+                        } else {
+                            customerThread = new Thread(new Customer(i, garsons[i % NUM_GARSONS], age, orderSemaphore));
+                            siparisThread = new Thread(new siparis(i, garsons[i % NUM_GARSONS]));
+                            odemeThread = new Thread(new odeme(i, NUM_Kasa, odemeSemaphore, finish));
+                        }
+                        customerThread.start();
+                        siparisThread.start();
+                        odemeThread.start();
+                        booleanArray[tablesId]=false;
+                    }
+                    if(tablesId==5 && booleanArray[tablesId]==true)
+                    {
+                        Thread customerThread;
+                        Thread siparisThread;
+                        Thread odemeThread;
+                        int age = random.nextInt(61) + 20;
+                        if (age > 65) {
+
+                            customerThread = new Thread(new PriorityCustomer(i, garsons[i % NUM_GARSONS], age, orderSemaphore,tablesId,booleanArray[tablesId]));
+                            siparisThread = new Thread(new siparis(i, garsons[i % NUM_GARSONS]));
+                            hasPriorityCustomers = true; // Set the flag if there is a priority customer
+                            odemeThread = new Thread(new odeme(i, NUM_Kasa, odemeSemaphore, finish));
+                        } else {
+                            customerThread = new Thread(new Customer(i, garsons[i % NUM_GARSONS], age, orderSemaphore,tablesId,booleanArray[tablesId]));
+                            siparisThread = new Thread(new siparis(i, garsons[i % NUM_GARSONS]));
+                            odemeThread = new Thread(new odeme(i, NUM_Kasa, odemeSemaphore, finish));
+                        }
+                        customerThread.start();
+                        siparisThread.start();
+                        odemeThread.start();
+                        booleanArray[tablesId]=false;
+                    }
             }
-            customerThread.start();
-            siparisThread.start();
         }
     }
+class odeme implements Runnable{
+        private int tablesId;
+        private int kasaId;
+    public Semaphore odemeSemaphore;
+    public boolean finish;
 
+    public odeme(int tablesId, int kasaId, Semaphore odemeSemaphore, boolean finish) {
+        this.tablesId = tablesId;
+        this.kasaId = kasaId;
+        this.odemeSemaphore=odemeSemaphore;
+        this.finish = finish;
+    }
+
+    @Override
+    public void run() {
+        try {
+
+            if (finish) {
+                tablesSemaphore.acquire();
+                System.out.println("masanın odemesi " + tablesId +"yapılıyor");
+                Thread.sleep(500);
+                orderSemaphore.release();
+                finish = false;
+
+            }
+            Thread.sleep(2000);
+            tablesSemaphore.release();
+            System.out.println("masanın odemesi " + tablesId +"yapıldı.");
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+}
     class siparis implements Runnable {
         private int customerId;
 
@@ -84,17 +251,20 @@ class Restaurant1 {
 
     class Customer implements Runnable {
         private int customerId;
+        private int tablesId;
         private Garson garson;
         private int age;
         public Semaphore orderSemaphore;
         public boolean orderTaken;
-
-        public Customer(int customerId, Garson garson, int age, Semaphore orderSemaphore) {
+        public boolean[] booleanArray;
+        public Customer(int customerId, Garson garson, int age, Semaphore orderSemaphore,int tablesId,boolean[] booleanArray[tablesId]) {
             this.customerId = customerId;
             this.garson = garson;
             this.age = age;
             this.orderSemaphore = orderSemaphore;
             this.orderTaken =false;
+            this.tablesId=tablesId;
+            this.booleanArray[tablesId]=booleanArray[tablesId];
         }
 
         @Override
@@ -104,7 +274,7 @@ class Restaurant1 {
                 System.out.println("Customer " + customerId + " (Age: " + age + ") is waiting for a table.");
                 Thread.sleep(500);
                 tablesSemaphore.acquire();
-                System.out.println("Customer " + customerId + " (Age: " + age + ") is sitting at a table.");
+                System.out.println("Customer " + customerId + " (Age: " + age + ") is sitting at a table.==="+tablesId);
 
                 if (!orderTaken) {
                     orderSemaphore.acquire();
@@ -114,13 +284,13 @@ class Restaurant1 {
                     System.out.println("Garson " + garson.getGarsonId() + " sipariş aldı from Customer " + customerId + " (Age: " + age + ")");
                     orderSemaphore.release();
                     orderTaken = true;
-
+                    finish=true;
                 }
 
                 Thread.sleep(2000);
 
                 tablesSemaphore.release();
-                System.out.println("Customer " + customerId + " (Age: " + age + ") left the table.");
+                System.out.println("Customer " + customerId + " (Age: " + age + ") left the table.==="+tablesId);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -146,6 +316,7 @@ class Restaurant1 {
                         System.out.println("Garson " + super.garson.getGarsonId() + " sipariş aldı from Customer " + super.customerId + " (Age: " + super.age + ") (Priority)");
                         orderSemaphore.release();
                         orderTaken = true;
+                        finish=true;
                     }
 
                     Thread.sleep(2000);

@@ -1,0 +1,10 @@
+# Bu bir .gitignore dosyasıdır.
+# Git tarafından izlenmemesi gereken dosya ve klasörleri buraya ekleyebilirsiniz.
+out/production/javavsCode/Restoran.class
+out/production/javavsCode/Restoran$Chef.class
+out/production/javavsCode/Restoran$Customer.class
+out/production/javavsCode/Restoran$Garson.class
+out/production/javavsCode/Restoran$Kasa.class
+out/production/javavsCode/Restoran$PriorityCustomer.class
+out/production/javavsCode/.idea/uiDesigner.xml
+

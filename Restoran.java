@@ -5,8 +5,8 @@ import java.awt.*;
 public class Restoran extends Thread {
 
     private static final int masaSayisi = 6;
-    private static final int müsteriSayisi = 8; 
-    private static final int öncelikliMusteri = 2;
+    private  int müsteriSayisi = 8; 
+    private  int öncelikliMusteri = 2;
     private static final int garsonSayisi = 3;
     private static final int asciSayisi = 2;
 
@@ -38,10 +38,9 @@ public class Restoran extends Thread {
      JLabel asciLabel;
 
      
-    
-
-
-    public Restoran() {
+    public Restoran(int toplamMusteriSayisi, int oncelikliMusteriSayisi) {
+        öncelikliMusteri = oncelikliMusteriSayisi;
+        müsteriSayisi = toplamMusteriSayisi;
         tablesSemaphore = new Semaphore(masaSayisi);
         priorityCustomersSemaphore = new Semaphore(öncelikliMusteri);
         ovenSemaphore = new Semaphore(asciSayisi);
@@ -244,7 +243,7 @@ public class Restoran extends Thread {
         @Override
         public void run() {
             try {
-            
+
                 tablesSemaphore.acquire();
 
                
@@ -277,7 +276,7 @@ public class Restoran extends Thread {
                     Thread.sleep(2000);
                     orderSemaphore.release();
                     orderTaken = true;
-                    GarsonArea.append("Garson " + garson.getGarsonId() + " sipariş aldı from Müşteri " + customerId + " (Yaş: " + age + ")" + "\n");
+                    GarsonArea.append("Garson " + garson.getGarsonId() + " sipariş aldı from Müşteri " + customerId + " (Yaş: " + age + ")" + "\n");  
                     garsonButtons[garson.getGarsonId()-1].setBackground(Color.RED);
                         }
 
@@ -381,7 +380,7 @@ public class Restoran extends Thread {
                         Thread.sleep(1000);
 
                         Thread.sleep(5000);
-                        super.masa.setdolumu(false); // Öncelikli müşteri masadan kalktığında masa boşalır
+                        super.masa.setdolumu(false); 
                         priorityCustomersSemaphore.release();
                         System.out.println("Öncelikli Müşteri " + super.customerId + " (Yaş: " + super.age + ") (Öncelikli Müşteri) masadan kalktı.");
                         MasaArea.append("Öncelikli Müşteri " + super.customerId + " (Yaş: " + super.age + ") (Öncelikli Müşteri) masadan kalktı." + "\n");

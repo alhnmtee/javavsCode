@@ -12,7 +12,9 @@ public class Restoran extends Thread {
 
     private static Semaphore tablesSemaphore;
     private static Semaphore priorityCustomersSemaphore;
-    private static Semaphore ovenSemaphore;
+    private static Semaphore ovenSemaphore;//aşçi için
+    private static Semaphore kasaSemaphore;//Kasa için
+    private Semaphore cookSemaphore;
 
     private Garson[] garsons;
     private Chef[] chefs;
@@ -44,6 +46,8 @@ public class Restoran extends Thread {
         tablesSemaphore = new Semaphore(masaSayisi);
         priorityCustomersSemaphore = new Semaphore(öncelikliMusteri);
         ovenSemaphore = new Semaphore(asciSayisi);
+        kasaSemaphore = new Semaphore(1);
+        cookSemaphore = new Semaphore(asciSayisi*2);
 
         garsons = new Garson[garsonSayisi];
         for (int i = 0; i < garsonSayisi; i++) {
@@ -108,24 +112,36 @@ public class Restoran extends Thread {
 
             
         MasaArea=new JTextArea();
-        panel.add(MasaArea);
-        MasaArea.setBounds(50,100,400,385);
+        // panel.add(MasaArea);
+        // MasaArea.setBounds(50,100,400,385);
         MasaArea.setEditable(false);
+        JScrollPane scrollPaneMasa = new JScrollPane(MasaArea);
+        scrollPaneMasa.setBounds(50, 100, 400, 385);
+        panel.add(scrollPaneMasa);
 
         GarsonArea=new JTextArea();
-        panel.add(GarsonArea);
-        GarsonArea.setBounds(500,100,400,385);
+        //panel.add(GarsonArea);
+        //GarsonArea.setBounds(500,100,400,385);
         GarsonArea.setEditable(false);
+        JScrollPane scrollPaneGarson = new JScrollPane(GarsonArea);
+        scrollPaneGarson.setBounds(500, 100, 400, 385);
+        panel.add(scrollPaneGarson);
 
         KasaArea=new JTextArea();
-        panel.add(KasaArea);
-        KasaArea.setBounds(950,100,450,385);
+        //panel.add(KasaArea);
+        //KasaArea.setBounds(950,100,450,385);
         KasaArea.setEditable(false);
+        JScrollPane scrollPaneKasa = new JScrollPane(KasaArea);
+        scrollPaneKasa.setBounds(950, 100, 450, 385);
+        panel.add(scrollPaneKasa);
 
         AsciArea=new JTextArea();
-        panel.add(AsciArea);
-        AsciArea.setBounds(1450,100,400,385);
+        //panel.add(AsciArea);
+        //AsciArea.setBounds(1450,100,400,385);
         AsciArea.setEditable(false);
+        JScrollPane scrollPaneAsci= new JScrollPane(AsciArea);
+        scrollPaneAsci.setBounds(1450, 100, 400, 385);
+        panel.add(scrollPaneAsci);
                 
         MasaArea.setFont(fontarea);
         GarsonArea.setFont(fontarea);
@@ -273,37 +289,61 @@ public class Restoran extends Thread {
                 if (!orderTaken) {
                     orderSemaphore.acquire();
                     System.out.println("Garson " + garson.getGarsonId() + " sipariş aldı from Müşteri " + customerId + " (Yaş: " + age + ")");
-                    Thread.sleep(2000);
-                    orderSemaphore.release();
                     orderTaken = true;
                     GarsonArea.append("Garson " + garson.getGarsonId() + " sipariş aldı from Müşteri " + customerId + " (Yaş: " + age + ")" + "\n");  
                     garsonButtons[garson.getGarsonId()-1].setBackground(Color.RED);
+                    Thread.sleep(2000);
                         }
 
                 Thread.sleep(5000);
                 if (orderTaken) {
                     ovenSemaphore.acquire();
-                    System.out.println("Aşçı " + chef.chefId + " Yemek hazırlanıyor.");
-                    Thread.sleep(3000);
-                    AsciArea.append("Aşçı " + chef.chefId + " Yemek hazırlanıyor." + "\n");
-                    asciButtons[chef.chefId-1].setBackground(Color.RED);
 
-                    System.out.println("Aşçı " + chef.chefId + " Yemek hazırlandı.");
+                    // Aşçının yapabileceği maksimum yemek sayısını belirleyen Semaphore
+                    cookSemaphore.acquire(); // Aşçının aynı anda 2 yemek yapabilmesini sağlar
+
+                    System.out.println("Aşçı " + chef.chefId + " Yemek 1'i yapıyor.");
+                    AsciArea.append("Aşçı " + chef.chefId + " Yemek 1'i yapıyor." + "\n");
+                    asciButtons[chef.chefId-1].setBackground(Color.RED);
+                    Thread.sleep(3000);
+
+                    // Yemek 2 yapma kısmı
+                    if (cookSemaphore.tryAcquire()) {
+                        System.out.println("Aşçı " + chef.chefId + " Yemek 2'yi yapıyor.");
+                        AsciArea.append("Aşçı " + chef.chefId + " Yemek 2'yi yapıyor." + "\n");
+                        asciButtons[chef.chefId-1].setBackground(Color.RED);
+                        Thread.sleep(3000);
+
+                        System.out.println("Aşçı " + chef.chefId + " Yemekler hazırlandı.");
+                        AsciArea.append("Aşçı " + chef.chefId + " Yemekler hazırlandı." + "\n");
+                        asciButtons[chef.chefId-1].setBackground(Color.GREEN);
+
+                        // Aşçının bir sonraki müşteriden sipariş alabilmesi için Semaphore'ı serbest bırak
+                        cookSemaphore.release();
+                    } else {
+                        System.out.println("Aşçı " + chef.chefId + " Yemek 1'i yapıyor. Yemek 2 için sipariş bekliyor.");
+                        AsciArea.append("Aşçı " + chef.chefId + " Yemek 1'i yapıyor. Yemek 2 için sipariş bekliyor." + "\n");
+                        asciButtons[chef.chefId-1].setBackground(Color.GREEN);
+
+                        // Yemek 2 yapma hakkı olmadığı için serbest bırak
+                        cookSemaphore.release();
+                    }
+
                     ovenSemaphore.release();
-                    AsciArea.append("Aşçı " + chef.chefId + " Yemek hazırlandı." + "\n");
-                    asciButtons[chef.chefId-1].setBackground(Color.GREEN);
+
                     System.out.println("Garson " + garson.getGarsonId() + " sipariş getirdi to Müşteri " + customerId + " (Yaş: " + age + ")");
                     GarsonArea.append("Garson " + garson.getGarsonId() + " sipariş getirdi to Müşteri " + customerId + " (Yaş: " + age + ")" + "\n");
+                    orderSemaphore.release();
                     garsonButtons[garson.getGarsonId()-1].setBackground(Color.GREEN);
                 } else {
                     System.out.println("Garson " + garson.getGarsonId() + " sipariş getiremedi to Müşteri " + customerId + " (Yaş: " + age + ")");
                     GarsonArea.append("Garson " + garson.getGarsonId() + " sipariş getiremedi to Müşteri " + customerId + " (Yaş: " + age + ")" + "\n");
                 }
 
-                ovenSemaphore.acquire();
+                kasaSemaphore.acquire();
                 System.out.println("Kasa: Müşteri ödemesi alınıyor. Müşteri: " + customerId + " (Yaş: " + age + ")  ödeme alındı.");
                 Thread.sleep(2000);
-                ovenSemaphore.release();
+                kasaSemaphore.release();
                 KasaArea.append("Müşteri ödemesi alınıyor. Müşteri: " + customerId + " (Yaş: " + age + ")  ödeme alındı." + "\n");
 
                 Thread.sleep(1000);
@@ -333,24 +373,24 @@ public class Restoran extends Thread {
                         // Öncelikli müşteri oturduğunda masa dolu kontrolü
                         if (super.masa.dolumuKontrol()) {
                             System.out.println("Öncelikli Müşteri " + super.customerId + " (Yaş: " + super.age + ") masaya oturamadı. Masa dolu.");
-                            priorityCustomersSemaphore.release();
                             MasaArea.append("Öncelikli Müşteri " + super.customerId + " (Yaş: " + super.age + ") masaya oturamadı. Masa dolu." + "\n");
+                            priorityCustomersSemaphore.release();
+
                             return;
                         }
 
                         System.out.println("Öncelikli Müşteri " + super.customerId + " (Yaş: " + super.age + ") (Öncelikli Müşteri) masaya oturdu. Masası: " + super.masa.getMasaNo());
                         super.masa.setdolumu(true); // Öncelikli müşteri oturduğunda masa dolu
-                        Thread.sleep(1000);
                         MasaArea.append("Öncelikli Müşteri " + super.customerId + " (Yaş: " + super.age + ") (Öncelikli Müşteri) masaya oturdu. Masası: " + super.masa.getMasaNo() + "\n");
                         tableButtons[super.masa.getMasaNo() - 1].setBackground(Color.GRAY);
+                        Thread.sleep(1000);
                         if (!orderTaken) {
                             orderSemaphore.acquire();
                             System.out.println("Garson " + super.garson.getGarsonId() + " sipariş aldı from Müşteri " + super.customerId + " (Yaş: " + super.age + ") (Öncelikli Müşteri)");
-                            Thread.sleep(2000);
-                            orderSemaphore.release();
                             orderTaken = true;
                             GarsonArea.append("Garson " + super.garson.getGarsonId() + " sipariş aldı from Müşteri " + super.customerId + " (Yaş: " + super.age + ") (Öncelikli Müşteri)" + "\n");
                             garsonButtons[super.garson.getGarsonId()-1].setBackground(Color.RED);
+                            Thread.sleep(2000);
                         }
 
                         if (orderTaken) {
@@ -360,21 +400,22 @@ public class Restoran extends Thread {
                             asciButtons[super.chef.chefId-1].setBackground(Color.RED);
                             Thread.sleep(3000);
                             System.out.println("Aşçı " + super.chef.chefId + " Yemek hazırlandı.");
-                            ovenSemaphore.release();
                             AsciArea.append("Aşçı " + super.chef.chefId + " Yemek hazırlandı." + "\n");
                             asciButtons[super.chef.chefId-1].setBackground(Color.GREEN);
+                            ovenSemaphore.release();
                             System.out.println("Garson " + super.garson.getGarsonId() + " sipariş getirdi to Müşteri " + super.customerId + " (Yaş: " + super.age + ")");
                             GarsonArea.append("Garson " + super.garson.getGarsonId() + " sipariş getirdi to Müşteri " + super.customerId + " (Yaş: " + super.age + ")" + "\n");
+                            orderSemaphore.release();
                             garsonButtons[super.garson.getGarsonId()-1].setBackground(Color.GREEN);
                         } else {
                             System.out.println("Garson " + super.garson.getGarsonId() + " sipariş getirmedi to Müşteri " + super.customerId + " (Yaş: " + super.age + ")");
                             GarsonArea.append("Garson " + super.garson.getGarsonId() + " sipariş getirmedi to Müşteri " + super.customerId + " (Yaş: " + super.age + ")" + "\n");
                         }
 
-                        ovenSemaphore.acquire();
+                        kasaSemaphore.acquire();
                         System.out.println("Kasa: Müşteri ödemesi alınıyor. Müşteri: " + super.customerId + " (Yaş: " + super.age + ") (Öncelikli Müşteri) ödeme alındı.");
                         Thread.sleep(2000);
-                        ovenSemaphore.release();
+                        kasaSemaphore.release();
                         KasaArea.append("Müşteri ödemesi alınıyor.Müşteri: " + super.customerId + " (Yaş: " + super.age + ") (Önc Müş) ödeme alındı." + "\n");
 
                         Thread.sleep(1000);

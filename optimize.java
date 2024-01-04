@@ -10,8 +10,8 @@ public class optimize {
         int bestGarsonSayisi = 0;
         int bestMasaSayisi = 0;
 
-        int minMasaSayisi = (kacMusteri / 2);
-        int maxMasaSayisi = kacMusteri*2;
+        int minMasaSayisi = 1;
+        int maxMasaSayisi = (kacMusteri*2)+1;
         int maxGarsonSayisi=kacMusteri;
         int maxAscisayisi=kacMusteri/2;
 
@@ -33,7 +33,7 @@ public class optimize {
             }
         }
 
-      //  System.out.println("En iyi net profit: " + bestNetProfit);
+        //System.out.println("En iyi net profit: " + bestNetProfit);
         //System.out.println("En iyi Aşçı Sayısı: " + bestAsciSayisi);
         //System.out.println("En iyi Garson Sayısı: " + bestGarsonSayisi);
         //System.out.println("En iyi Masa Sayısı: " + bestMasaSayisi);

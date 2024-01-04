@@ -64,9 +64,9 @@ public class problem2 {
             masa[i] = new Masa(i, 0);
         }
 
-        for (int time = 0; time < 180; time++) {
+        for (int time = 0; time <= 100; time++) {
 
-           // System.out.println("\nTime: " + time);
+            // System.out.println("\nTime: " + time);
 
             // Garson işlemleri
             if (!hesapOde.isEmpty()) {
@@ -74,20 +74,24 @@ public class problem2 {
                 hesapOde.remove(0);
                 totalProfit++;
                 masa[servedCustomer.tableNumber].isAvailable = true;
-              //  System.out.println("Customer at " + servedCustomer.tableNumber + " paid at time " + time);
+                if(time==119){
+                    int a =hesapOde.size()-1;
+                    totalProfit=a+totalProfit;
+                }
+                //  System.out.println("Customer at " + servedCustomer.tableNumber + " paid at time " + time);
             }
 
 
             // Aşçı işlemleri
             if (!asciQueue.isEmpty()) {
-             //   System.out.println(gercekAsci);
+                //   System.out.println(gercekAsci);
                 int asciKuyrukSize = Math.min(gercekAsci, asciQueue.size()); // Aşçı kapasitesi kadar kontrol
                 for (int i = 0; i < asciKuyrukSize; i++) {
                     Masa preparedMeal = asciQueue.get(0);
                     asciQueue.remove(0);
                     if (time - preparedMeal.arrivalTime >= 3) {
                         preparedMeal.siparisSüresi = -1; // Yemek hazırlandı
-                       // System.out.println("Aşçı yemek hazırladı masa " + preparedMeal.tableNumber);
+                        // System.out.println("Aşçı yemek hazırladı masa " + preparedMeal.tableNumber);
                         preparedMeal.garsonSiparisAldiMi = true;
                         preparedMeal.arrivalTime += 6;
                         kasaQueue.set(i, preparedMeal);
@@ -109,7 +113,7 @@ public class problem2 {
 
             // boş masa numaralarını yazdır
             //for (Integer masaNumarasi : bosMasaNumaralari) {
-             // System.out.println("Boş Masa Numarası: " + masaNumarasi);
+            // System.out.println("Boş Masa Numarası: " + masaNumarasi);
             //}
 
             // Oturacak müşteri eklemesi
@@ -137,7 +141,7 @@ public class problem2 {
                                 if (m.tableNumber == masaNumarasi && m.getSiparisSüresi() == -1) {
                                     m.siparisSüresi = time + 2;
                                     garsonSayisi--;
-                                //    System.out.println("Garson bir sipariş aldı masa " + masaNumarasi);
+                                    //    System.out.println("Garson bir sipariş aldı masa " + masaNumarasi);
 
 
                                 }
@@ -147,7 +151,7 @@ public class problem2 {
                             masa[masaNumarasi].arrivalTime += 1;
                         }
                     } else {
-                       // System.out.println("Masa boş");
+                        // System.out.println("Masa boş");
                     }
                 }
             }
@@ -173,7 +177,7 @@ public class problem2 {
                 } else if (time == m.getSiparisSüresi() && m.getSiparisSüresi() != -1) {
                     garsonSayisi++;
                     m.siparisSüresi = -1;
-                  //  System.out.println("Sipariş alındı masa " + m.tableNumber);
+                    //  System.out.println("Sipariş alındı masa " + m.tableNumber);
                     asciQueue.add(new Masa(m.tableNumber, time));
                     //m.garsonSiparisAldiMi=true;
                     //kasaQueue.set(i, m);
@@ -212,13 +216,13 @@ public class problem2 {
         int totalCost = numTables + totalGarson + totalAsci;
         netProfit = totalProfit - totalCost;
 
-       /* System.out.println("\nFinal Results:");
+        System.out.println("\nFinal Results:");
         System.out.println("Total Garson: " + totalGarson);
         System.out.println("Total Aşçı: " + totalAsci);
         System.out.println("Total Profit: " + totalProfit);
         System.out.println("Total Cost: " + totalCost);
         System.out.println("Net Profit: " + netProfit);
-        System.out.println("Optimize edilmiş parametreler: ");*/
+        System.out.println("Masa Sayısı: "+ numTables);
 
         waitingQueue.clear();
         kasaQueue.clear();

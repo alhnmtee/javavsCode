@@ -14,7 +14,7 @@ public class Restoran extends Thread {
     private int müsteriSayisi3=0;
     private int öncelikliMusteri3=0;
 
-    private static final int garsonSayisi = 3;
+    private static final int garsonSayisi = 4;
     private static final int asciSayisi = 2;
 
     private static Semaphore tablesSemaphore;
@@ -47,9 +47,9 @@ public class Restoran extends Thread {
     Thread customerThread;
     Customer[] customers=new Customer[90];
 
-   ArrayList<Thread> customerThreads=new ArrayList<>();
+    ArrayList<Thread> customerThreads=new ArrayList<>();
 
-   boolean durdurDevam=false;
+    boolean durdurDevam=false;
     public static int ToplamKazanc=0;
 
 
@@ -89,6 +89,8 @@ public class Restoran extends Thread {
         panel = new JPanel();
 
         frame.add(panel);
+        panel.setBackground(Color.pink);
+
 
         frame.setLayout(null);
         panel.setLayout(null);
@@ -236,8 +238,8 @@ public class Restoran extends Thread {
 
         for (int i = 0; i < öncelikliMusteri; i++) {
             customers[i] = new PriorityCustomer(i, garsons[i % garsonSayisi], 65, orderSemaphore, chefs[i % asciSayisi], masalar[i]);
-          customerThread= new Thread(customers[i]);
-          customerThreads.add(customerThread);
+            customerThread= new Thread(customers[i]);
+            customerThreads.add(customerThread);
 
         }
 
@@ -251,7 +253,7 @@ public class Restoran extends Thread {
 
         JButton dalga=new JButton("2. Adım");
         panel.add(dalga);
-        dalga.setBounds(560,800,150,70);
+        dalga.setBounds(400,900,130,70);
         dalga.setVisible(true);
         dalga.addActionListener(actionEvent -> {
             customerThreads.clear();
@@ -279,7 +281,7 @@ public class Restoran extends Thread {
 
         JButton dalga2=new JButton("3. Adım");
         panel.add(dalga2);
-        dalga2.setBounds(560,1000,150,70);
+        dalga2.setBounds(720,900,130,70);
         dalga2.setVisible(true);
         dalga2.addActionListener(actionEvent -> {
             customerThreads.clear();
@@ -308,7 +310,7 @@ public class Restoran extends Thread {
 
         JButton durdur=new JButton("Durdur");
         panel.add(durdur);
-        durdur.setBounds(560,900,150,70);
+        durdur.setBounds(560,900,130,70);
         durdur.setVisible(true);
         durdur.addActionListener(actionEvent -> {
             if(durdurDevam){
@@ -352,28 +354,13 @@ public class Restoran extends Thread {
 
 
     }
-    private void showPaymentImage() {
-        ImageIcon icon = new ImageIcon("C:\\Users\\ASUS\\Desktop\\coin.png");
-        Image image = icon.getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH);
-        KasaResimLabel.setIcon(new ImageIcon(image));
-        KasaResimLabel.setVisible(true);
-        ToplamKazanc++;
-    }
     @Override
     public void run() {
-
-
-      //customers start
+        //customers start
         for(Thread thread:customerThreads){
             thread.start();
         }
-
-
-
-
-
     }
-
 
     class Customer implements Runnable {
         private int customerId;
@@ -414,6 +401,12 @@ public class Restoran extends Thread {
                 while (masa.dolumuKontrol()) {
                     System.out.println("Müşteri " + customerId + " (Yaş: " + age + ") masaya oturamadı. Masa dolu. Beklemede...");
                     Thread.sleep(5000);
+                    //try {
+                    //  Thread.sleep(20000);
+                    //} catch (InterruptedException e) {
+                    //      Thread.currentThread().interrupt();
+                    //        break;
+                    // }
                 }
 
                 System.out.println("Müşteri " + customerId + " (Yaş: " + age + ") masaya oturdu. Masası: " + masa.getMasaNo());
@@ -461,7 +454,7 @@ public class Restoran extends Thread {
                 KasaArea.append("Müşteri ödemesi alınıyor. Müşteri: " + customerId + " (Yaş: " + age + ")  ödeme alındı." + "\n");
                 showPaymentImage();
                 Thread.sleep(1000);
-
+                KasaResimLabel.setVisible(false);
                 // Müşteri masadan kalktığında masa boşalır
                 masa.setdolumu(false);
                 tablesSemaphore.release();
@@ -512,6 +505,16 @@ public class Restoran extends Thread {
                             Thread.sleep(2000);
                             garsonButtons[super.garson.getGarsonId()-1].setBackground(Color.GREEN);
                         }
+                        //while (super.masa.dolumuKontrol()) {
+                        // System.out.println("Müşteri " + super.customerId + " (Yaş: " + super.age + ") masaya oturamadı. Masa dolu. Beklemede...");
+
+                        // try {
+                        //   Thread.sleep(20000);
+                        //} catch (InterruptedException e) {
+                        //  Thread.currentThread().interrupt();
+                        // break;
+                        //  }
+
 
                         if (orderTaken) {
                             ovenSemaphore.acquire();
@@ -534,9 +537,9 @@ public class Restoran extends Thread {
                         Thread.sleep(2000);
                         kasaSemaphore.release();
                         KasaArea.append("Müşteri ödemesi alınıyor.Müşteri: " + super.customerId + " (Yaş: " + super.age + ") (Önc Müş) ödeme alındı." + "\n");
-
+                        showPaymentImage();
                         Thread.sleep(1000);
-
+                        KasaResimLabel.setVisible(false);
                         Thread.sleep(5000);
                         super.masa.setdolumu(false);
                         priorityCustomersSemaphore.release();
@@ -553,17 +556,64 @@ public class Restoran extends Thread {
         }
     }
 
+    private void showPaymentImage() {
+        ImageIcon icon = new ImageIcon("C:\\Users\\ASUS\\Desktop\\coin.png");
+        Image image = icon.getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH);
+        KasaResimLabel.setIcon(new ImageIcon(image));
+        KasaResimLabel.setVisible(true);
+        ToplamKazanc++;
+    }
+
     static class Chef implements Runnable {
         private int chefId;
 
         public Chef(int chefId) {
             this.chefId = chefId;
         }
-
-        @Override
-        public void run() {
+        public void run(){
 
         }
+
+        // @Override
+        /*public void run() {
+            try {
+                while(true){
+                    cookSemaphore.acquire();
+                    System.out.println("Aşçı " + chefId + " Yemek 1'i yapıyor.");
+                    SwingUtilities.invokeLater(() -> restoran.AsciArea.append("Aşçı " + chefId + " Yemek 1'i yapıyor.\n"));
+                    SwingUtilities.invokeLater(() -> restoran.asciButtons[chefId - 1].setBackground(Color.RED));
+                    Thread.sleep(3000);
+
+                    if (cookSemaphore.tryAcquire()) {
+                        System.out.println("Aşçı " + chefId + " Yemek 2'yi yapıyor.");
+                        SwingUtilities.invokeLater(() -> restoran.AsciArea.append("Aşçı " + chefId + " Yemek 2'yi yapıyor.\n"));
+                        SwingUtilities.invokeLater(() -> restoran.asciButtons[chefId - 1].setBackground(Color.RED));
+                        Thread.sleep(3000);
+
+                        System.out.println("Aşçı " + chefId + " Yemekler hazırlandı.");
+                        SwingUtilities.invokeLater(() -> restoran.AsciArea.append("Aşçı " + chefId + " Yemekler hazırlandı.\n"));
+                        SwingUtilities.invokeLater(() -> restoran.asciButtons[chefId - 1].setBackground(Color.GREEN));
+
+                        cookSemaphore.release();
+                    } else {
+                        System.out.println("Aşçı " + chefId + " Yemek 1'i yapıyor. Yemek 2 için sipariş bekliyor.");
+                        SwingUtilities.invokeLater(() -> restoran.AsciArea.append("Aşçı " + chefId + " Yemek 1'i yapıyor. Yemek 2 için sipariş bekliyor.\n"));
+                        SwingUtilities.invokeLater(() -> restoran.asciButtons[chefId - 1].setBackground(Color.GREEN));
+                    }
+                    ovenSemaphore.release();
+
+                    System.out.println("Garson " + garson.getGarsonId() + " sipariş getirdi to Müşteri " + customer.customerId + " (Yaş: " + customer.age + ")");
+                    SwingUtilities.invokeLater(() -> restoran.GarsonArea.append("Garson " + garson.getGarsonId() + " sipariş getirdi to Müşteri " + customer.customerId + " (Yaş: " + customer.age + ")\n"));
+                    orderSemaphore.release();
+
+
+                    SwingUtilities.invokeLater(() -> restoran.garsonButtons[garson.getGarsonId() - 1].setBackground(Color.GREEN));
+                    kasaSemaphore.release();
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }*/
     }
 
     static class Masa {
